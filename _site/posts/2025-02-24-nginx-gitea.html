@@ -10,7 +10,7 @@
     <body>
         <header>
             <div class="logo">
-                <a href="../">Rowan TL's Website</a>
+                <a href="../">Rowan Torbitzky-Lane's Website</a>
             </div>
             <nav>
                 <a href="../">Home</a>
@@ -117,7 +117,6 @@ This sets the exposed port to your host do be <code>3001</code> rather than <cod
 <img src="../images/gitea_pic_2.png" alt="Initial Config Pic 2" /></p>
 <p>congartulation! You have successfully completed the easist part of this post.</p>
 <h1 id="nixos-configuration">NixOS configuration :))))))))))))))))</h1>
-<p>I used Nginx for this.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode configuration-snippet.nix"><code class="sourceCode nix"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">users</span>.<span class="va">users</span>.<span class="va">git</span> <span class="op">=</span> <span class="op">{</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">isSystemUser</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
@@ -235,7 +234,7 @@ This sets the exposed port to your host do be <code>3001</code> rather than <cod
 <p>Creates and starts Nginx, will automatically renew certs for you too which is pretty cool.
 Points Nginx to redirect to the Docker container.</p>
 <p>I’m gonna assume you know how to structure a Nix configuration.</p>
-<p>If you want to see all of my configurations, they can be found on <a href="https://github.com/RowanTL/nix-configuration/tree/main">github</a>.
+<p>If you want to see all of my configurations, they can be found on <a href="https://github.com/RowanTL/nix-configuration/blob/911262a991e0c4c638670404d6906776a036ac07/hosts/roebox/configuration.nix">github</a>.
 This configuration is under <code>hosts/roebox/configuration.nix</code>.</p>
 <h1 id="setting-up-ssh">Setting up SSH</h1>
 <p>At this point you should have all of the mandatory steps above completed. You need that git user basically.</p>
