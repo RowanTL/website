@@ -1,0 +1,9 @@
+services:
+  hakyll:
+    container_name: "hakyll_website"
+    # build: .
+    image: nginx:latest
+    ports:
+      - 3009:80
+    volumes:
+      - ./_site/:/usr/share/nginx/html
