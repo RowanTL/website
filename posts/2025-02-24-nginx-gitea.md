@@ -77,7 +77,7 @@ After pasting this into a file, you should absolutely modify the password used.
 
 Final note: **Don't put plaintext passwords straight in the file in prod.**
 There are ways around this with docker secrets, but it's a pain and not in the Nix style.
-I have my config setup like this until I learn enough Nix to turn this into it's own .nix file.
+I have my config setup like this until I learn enough Nix to turn this into its own .nix file.
 
 Another Final Note: Take a gander at the UID and GID, you will probably need to modify
 those for your own setup. Details later.
