@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Rowan TL's Website - Gitea Docker Container on NixOS</title>
+        <link rel="stylesheet" href="../css/default.css" />
+    </head>
+    <body>
+        <header>
+            <div class="logo">
+                <a href="../">Rowan TL's Website</a>
+            </div>
+            <nav>
+                <a href="../">Home</a>
+                <a href="../about.html">About</a>
+                <a href="../contact.html">Contact</a>
+                <a href="../archive.html">Archive</a>
+            </nav>
+        </header>
+
+        <main role="main">
+            <h1>Gitea Docker Container on NixOS</h1>
+            <article>
+    <section class="header">
+        Posted on February 24, 2025
+        
+    </section>
+    <section>
+        <h1 id="introduction">Introduction</h1>
+<p>Hello reader from the 4th dimension: the internet. This post covers how I used Nginx, Gitea, and Docker together
+to create the Git instance hosted at <a href="https://git.evotrade.org">git.evotrade.org</a>. I am new to Nix (I started 2 days ago),
+so I hope this blog sheds some light covering the 3??? posts I found on duckduckgo covering Gitea and Nix.</p>
+<h2 id="this-is-not-a-replacement-for-official-documentation">This is not a replacement for official documentation!</h2>
+<p>If you need a true understanding of anything deeper than what’s in this post, please for love of god visit
+gitea’s official website!</p>
+<p><a href="https://docs.gitea.com/next/installation/install-with-docker">https://docs.gitea.com/next/installation/install-with-docker</a></p>
+<h1 id="the-wonderful-compose-file">The wonderful compose file</h1>
+<p>Here’s the compose file for those who hate scrolling down and don’t want to read (me included 👍)</p>
+<p><strong>Actually modify this!</strong> Note: 辛抱 means patience in Japanese (google translate ftw)</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode compose.yml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">networks</span><span class="kw">:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">gitea</span><span class="kw">:</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">external</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">gitea_vol</span><span class="kw">:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">driver</span><span class="kw">:</span><span class="at"> local</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">services</span><span class="kw">:</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">server</span><span class="kw">:</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> gitea/gitea:latest</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">container_name</span><span class="kw">:</span><span class="at"> gitea</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> USER_UID=994</span><span class="co"> # This is a note</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> USER_GID=992</span><span class="co"> # This is also a note</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__database__DB_TYPE=postgres</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__database__HOST=db:5432</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__database__NAME=gitea</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__database__USER=gitea</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__database__PASSWD=modify_me_with_辛抱</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__service__DISABLE_REGISTRATION=true</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__repository__DISABLE_HTTP_GET=true</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__actions__ENABLED=true</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">networks</span><span class="kw">:</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> gitea</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> gitea_vol:/data</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /var/lib/gitea-server/.ssh:/data/git/.ssh</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /etc/timezone:/etc/timezone:ro</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /etc/localtime:/etc/localtime:ro</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ports</span><span class="kw">:</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;3000:3000&quot;</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="st">&quot;127.0.0.1:2222:22&quot;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">restart</span><span class="kw">:</span><span class="at"> unless-stopped</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">depends_on</span><span class="kw">:</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> db</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">db</span><span class="kw">:</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">image</span><span class="kw">:</span><span class="at"> docker.io/library/postgres:14</span></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">restart</span><span class="kw">:</span><span class="at"> always</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> POSTGRES_USER=gitea</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> POSTGRES_PASSWORD=modify_me_with_辛抱</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> POSTGRES_DB=gitea</span></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">networks</span><span class="kw">:</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> gitea</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">volumes</span><span class="kw">:</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> ./postgres_data:/var/lib/postgresql/data  </span></span></code></pre></div>
+<p>After pasting this into a file, you should absolutely modify the password used.</p>
+<p>Final note: <strong>Don’t put plaintext passwords straight in the file in prod.</strong>
+There are ways around this with docker secrets, but it’s a pain and not in the Nix style.
+I have my config setup like this until I learn enough Nix to turn this into it’s own .nix file.</p>
+<p>Another Final Note: Take a gander at the UID and GID, you will probably need to modify
+those for your own setup. Details later.</p>
+<h3 id="modifications-i-made-to-this-compose.yml">Modifications I made to this compose.yml</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode compose-snippet.yml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">services</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">server</span><span class="kw">:</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">environment</span><span class="kw">:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__service__DISABLE_REGISTRATION=true</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__repository__DISABLE_HTTP_GET=true</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> GITEA__actions__ENABLED=true</span></span></code></pre></div>
+<p>disable registration just makes it so new people can’t go to my repo, make an account, and then wreak unspeakable things on my server.
+disable http get just makes cloning over http impossible. No sneaky in my code :).
+actions enabled allows repo wide actions to happen. Google what they are, trust.</p>
+<h3 id="how-to-run">How to run</h3>
+<p>In order to run this, I’m assuming you have decent knowledge about docker. If not,
+you have google. No link for you.</p>
+<p>Basically all you need to do to run this is:</p>
+<p><code>sudo docker compose up -d</code> once you’ve <strong>changed</strong> the password. If you have an email address,
+feel like interacting, and need help, my email can be found in the <a href="https://git.evotrade.org/about">About</a> section.</p>
+<p>This will open a web server at <code>your_local_ip_here:3000</code>. If 3000 is taken, modify the <code>3000:3000</code> to be something like <code>3001:3000</code>.
+This sets the exposed port to your host do be <code>3001</code> rather than <code>3000</code>.</p>
+<p>Afterwards some basic configuration will pop up. <strong>You actually have to edit some of these</strong></p>
+<p><img src="../images/gitea_pic_0.png" alt="Initial Config Pic 0" />
+<img src="../images/gitea_pic_1.png" alt="Initial Config Pic 1" />
+<img src="../images/gitea_pic_2.png" alt="Initial Config Pic 2" /></p>
+<p>congartulation! You have successfully completed the easist part of this post.</p>
+<h1 id="nixos-configuration">NixOS configuration :))))))))))))))))</h1>
+<p>I used Nginx for this.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode configuration-snippet.nix"><code class="sourceCode nix"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">users</span>.<span class="va">users</span>.<span class="va">git</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">isSystemUser</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="va">group</span> <span class="op">=</span> <span class="st">&quot;git&quot;</span><span class="op">;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="va">home</span> <span class="op">=</span> <span class="st">&quot;/var/lib/gitea-server&quot;</span><span class="op">;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">createHome</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">shell</span> <span class="op">=</span> <span class="st">&quot;/var/lib/gitea-server/ssh-shell&quot;</span><span class="op">;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="va">users</span>.<span class="va">groups</span>.<span class="va">git</span> <span class="op">=</span> <span class="op">{};</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># For nginx to work with acme</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="co"># https://bkiran.com/blog/using-nginx-in-nixos</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="va">users</span>.<span class="va">users</span>.<span class="va">nginx</span>.<span class="va">extraGroups</span> <span class="op">=</span> <span class="op">[</span> <span class="st">&quot;acme&quot;</span> <span class="op">];</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Enable the OpenSSH daemon.</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="va">services</span>.<span class="va">openssh</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="va">enable</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">ports</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">22</span> <span class="op">];</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="va">settings</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      <span class="va">PasswordAuthentication</span> <span class="op">=</span> <span class="cn">false</span><span class="op">;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      <span class="va">AllowUsers</span> <span class="op">=</span> <span class="cn">null</span><span class="op">;</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>      <span class="va">UseDns</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>      <span class="va">X11Forwarding</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>      <span class="va">PermitRootLogin</span> <span class="op">=</span> <span class="st">&quot;no&quot;</span><span class="op">;</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Open ports in the firewall.</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="va">networking</span>.<span class="va">firewall</span>.<span class="va">allowedTCPPorts</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">22</span> <span class="dv">80</span> <span class="dv">443</span> <span class="op">];</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  <span class="va">networking</span>.<span class="va">firewall</span>.<span class="va">allowedUDPPorts</span> <span class="op">=</span> <span class="op">[</span> <span class="dv">22</span> <span class="dv">80</span> <span class="dv">443</span> <span class="op">];</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Pulled directly from the wiki</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># https://nixos.wiki/wiki/Nginx</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="va">services</span>.<span class="va">nginx</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="va">enable</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="va">recommendedGzipSettings</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="va">recommendedOptimisation</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="va">recommendedProxySettings</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    <span class="va">recommendedTlsSettings</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="va">sslCiphers</span> <span class="op">=</span> <span class="st">&quot;AES256+EECDH:AES256+EDH:!aNULL&quot;</span><span class="op">;</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="va">appendHttpConfig</span> <span class="op">=</span> <span class="st">''</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a><span class="st">      # Add HSTS header with preloading to HTTPS requests.</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="st">      # Adding this header to HTTP requests is discouraged</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="st">      map $scheme $hsts_header {</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="st">          https   &quot;max-age=31536000; includeSubdomains; preload&quot;;</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="st">      }</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="st">      add_header Strict-Transport-Security $hsts_header;</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="st">      # Enable CSP for your services.</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="st">      #add_header Content-Security-Policy &quot;script-src 'self'; object-src 'none'; base-uri 'none';&quot; always;</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="st">      # Minimize information leaked to other domains</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="st">      add_header 'Referrer-Policy' 'origin-when-cross-origin';</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="st">      # Disable embedding as a frame</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="st">      add_header X-Frame-Options DENY;</span></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="st">      # Prevent injection of code in other mime types (XSS Attacks)</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="st">      add_header X-Content-Type-Options nosniff;</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="st">      # This might create errors</span></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="st">      proxy_cookie_path / &quot;/; secure; HttpOnly; SameSite=strict&quot;;</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="st">    ''</span><span class="op">;</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    <span class="co"># The definitions of the individual sites go here.</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="va">virtualHosts</span>.<span class="st">&quot;name.tld&quot;</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>      <span class="va">serverName</span> <span class="op">=</span> <span class="st">&quot;name.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>      <span class="va">useACMEHost</span> <span class="op">=</span> <span class="st">&quot;name.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>      <span class="va">acmeRoot</span> <span class="op">=</span> <span class="st">&quot;/var/lib/acme/challenges-name&quot;</span><span class="op">;</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>      <span class="va">forceSSL</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>      <span class="va">locations</span>.<span class="st">&quot;/&quot;</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>        <span class="va">proxyPass</span> <span class="op">=</span> <span class="st">&quot;http://127.0.0.1:3009&quot;</span><span class="op">;</span> <span class="co"># this is just a proxy to my static site</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>      <span class="op">};</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>    <span class="va">virtualHosts</span>.<span class="st">&quot;git.name.tld&quot;</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>      <span class="va">serverName</span> <span class="op">=</span> <span class="st">&quot;git.name.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>      <span class="va">useACMEHost</span> <span class="op">=</span> <span class="st">&quot;name.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>      <span class="va">acmeRoot</span> <span class="op">=</span> <span class="st">&quot;/var/lib/acme/challenges-name&quot;</span><span class="op">;</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>      <span class="va">addSSL</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>      <span class="va">forceSSL</span> <span class="op">=</span> <span class="cn">false</span><span class="op">;</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>      <span class="va">locations</span>.<span class="st">&quot;/&quot;</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>        <span class="va">proxyPass</span> <span class="op">=</span> <span class="st">&quot;http://127.0.0.1:3000&quot;</span><span class="op">;</span> <span class="co"># the gitea docker container</span></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>      <span class="op">};</span></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>    <span class="va">virtualHosts</span>.<span class="va">default</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>      <span class="va">serverName</span> <span class="op">=</span> <span class="st">&quot;_&quot;</span><span class="op">;</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>      <span class="va">default</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>      <span class="va">rejectSSL</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>      <span class="va">locations</span>.<span class="st">&quot;/&quot;</span>.<span class="va">return</span> <span class="op">=</span> <span class="st">&quot;444&quot;</span><span class="op">;</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>  <span class="co"># SSL cert renewal</span></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>  <span class="va">security</span>.<span class="va">acme</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a>    <span class="va">acceptTerms</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a>    <span class="va">defaults</span>.<span class="va">email</span> <span class="op">=</span> <span class="st">&quot;one_of_the_email_addresses@email.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>    <span class="va">certs</span>.<span class="st">&quot;name.tld&quot;</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>      <span class="va">webroot</span> <span class="op">=</span> <span class="st">&quot;/var/lib/acme/challenges-name&quot;</span><span class="op">;</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>      <span class="va">email</span> <span class="op">=</span> <span class="st">&quot;one_of_the_email_addresses@email.tld&quot;</span><span class="op">;</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a>      <span class="va">group</span> <span class="op">=</span> <span class="st">&quot;nginx&quot;</span><span class="op">;</span></span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>      <span class="va">extraDomainNames</span> <span class="op">=</span> <span class="op">[</span></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;git.name.tld&quot;</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a>      <span class="op">];</span></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>    <span class="op">};</span></span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>  <span class="op">};</span></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a>  <span class="va">virtualisation</span>.<span class="va">docker</span>.<span class="va">enable</span> <span class="op">=</span> <span class="cn">true</span><span class="op">;</span></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>Creates and starts Nginx, will automatically renew certs for you too which is pretty cool.
+Points Nginx to redirect to the Docker container.</p>
+<p>I’m gonna assume you know how to structure a Nix configuration.</p>
+<p>If you want to see all of my configurations, they can be found on <a href="https://github.com/RowanTL/nix-configuration/tree/main">github</a>.
+This configuration is under <code>hosts/roebox/configuration.nix</code>.</p>
+<h1 id="setting-up-ssh">Setting up SSH</h1>
+<p>At this point you should have all of the mandatory steps above completed. You need that git user basically.</p>
+<p>In this example, I have my git user’s home directory at <code>/var/lib/gitea-server</code>. Now it’s a matter of following the official instructions
+with a very slight amount of deviation.</p>
+<p><a href="https://docs.gitea.com/next/installation/install-with-docker">https://docs.gitea.com/next/installation/install-with-docker</a></p>
+<ol type="1">
+<li>Get your git user’s UID and GID.</li>
+</ol>
+<p>Use <code>sudo -u git id</code>. Copy and paste the respective values into the compose file above.
+This replaces the</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode compose-snippet.yml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> USER_UID=994</span><span class="co"> # This is a note</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> USER_GID=992</span><span class="co"> # This is also a note</span></span></code></pre></div>
+<ol start="2" type="1">
+<li>Generate an ssh key for your boy</li>
+</ol>
+<p><code>sudo -u git ssh-keygen -t ecdsa -b 521 -C "Gitea Host Key"</code>. You can place key pair anywhere, I put it in <code>/var/lib/gitea-server/.ssh</code>.</p>
+<ol start="3" type="1">
+<li>Copy and paste the generated public key into the authorized_keys file</li>
+</ol>
+<p>I’m not giving commands for this one. The authorized_keys file <code>/var/lib/gitea-server/.ssh/authorized_keys</code></p>
+<ol start="4" type="1">
+<li><p><code>sudo -u git chmod 600 /var/lib/gitea-server/.ssh/authorized_keys</code></p></li>
+<li><p>Ensure everything is owned by the git user</p></li>
+</ol>
+<p><code>sudo chmod -R git:git /var/lib/gitea-server/.ssh</code></p>
+<ol start="6" type="1">
+<li>Make ssh-shell</li>
+</ol>
+<p>I didn’t try very hard with sshing shim because of the pathing.
+Instead I did sshing shell.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode ssh-shell-creation.sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span> <span class="op">&lt;&lt;&quot;EOF&quot;</span> <span class="kw">|</span> <span class="fu">sudo</span> tee /var/lib/gitea-server/ssh-shell</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="st">#!/bin/sh</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="st">shift</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="st">ssh -p 2222 -o StrictHostKeyChecking=no git@127.0.0.1 &quot;SSH_ORIGINAL_COMMAND=\&quot;$SSH_ORIGINAL_COMMAND\&quot; $@&quot;</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod +x /var/lib/gitea-server/ssh-shell</span></code></pre></div>
+<p>I would make a test repo and see if cloning this works with ssh after adding a new public key to your account.
+Never add the generated public key from step 2 to gitea.</p>
+<h1 id="outro">Outro</h1>
+<p>This was a culmination of a days effort attempting to figure this out. Hope this helps someone.
+Email me if you need help.</p>
+    </section>
+</article>
+
+        </main>
+
+        <footer>
+            Site proudly generated by
+            <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+        </footer>
+    </body>
+</html>
