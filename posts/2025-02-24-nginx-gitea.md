@@ -1,6 +1,7 @@
 ---
 title: Gitea Docker Container on NixOS
 Author: Rowan Torbitzky-lane
+comment: True
 ---
 
 # Introduction
