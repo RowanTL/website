@@ -7,3 +7,4 @@ services:
       - 3009:80
     volumes:
       - ./_site/:/usr/share/nginx/html
+    restart: unless-stopped
